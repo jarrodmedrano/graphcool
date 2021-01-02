@@ -2,15 +2,56 @@ import { GraphQLServer } from "graphql-yoga";
 
 // String, Boolean, Int, Float
 
+// Demo user data
+
+const users = [
+  {
+    id: "1",
+    name: "Andrew",
+    email: "andrew@example.com",
+    age: 27,
+  },
+  {
+    id: "2",
+    name: "Sarah",
+    email: "sarah@exmaple.com",
+  },
+  {
+    id: "3",
+    name: "Mike",
+    email: "mike@example.com",
+  },
+];
+
+const posts = [
+  {
+    id: "1",
+    title: "Post1",
+    body: "My post body",
+    published: true,
+  },
+  {
+    id: "2",
+    title: "Post2",
+    body: "My post body 2",
+    published: true,
+  },
+  {
+    id: "3",
+    title: "Post3",
+    body: "My post body",
+    published: true,
+  },
+];
+
 // Type Definitions schema
 
 const typeDefs = `
   type Query {
-    greeting(name: String, position: String): String!
-    grades: [Int!]!
-    add(numbers: [Float!]!): Float!
+    users(query: String): [User!]!
     me: User!
     post: Post!
+    posts(query: String): [Post!]!
   }
 
   type User {
@@ -19,7 +60,7 @@ const typeDefs = `
     email: String!
     age: Int
   }
-
+  
   type Post {
     id: ID!
     title: String!
@@ -32,25 +73,21 @@ const typeDefs = `
 // Resolvers
 const resolvers = {
   Query: {
-    greeting(parent, args, ctx, info) {
-      if (args.name && args.position) {
-        return `Hello, ${args.name}! You are my favorit ${args.position}`;
-      } else {
-        return "Hello!";
+    users(parent, args, ctx, info) {
+      if (!args.query) {
+        return users;
       }
-    },
-    add(parent, args, ctx, info) {
-      if (args.numbers.length === 0) {
-        return 0;
-      }
-
-      // [1, 5, 10, 2]
-      return args.numbers.reduce((acc, curr) => {
-        return acc + curr;
+      return users.filter((user) => {
+        return user.name.toLowerCase().includes(args.query.toLowerCase());
       });
     },
-    grades(parent, args, ctx, info) {
-      return [99, 80, 93];
+    posts(parent, args, ctx, info) {
+      if (!args.query) {
+        return posts;
+      }
+      return posts.filter((post) => {
+        return post.name.toLowerCase().includes(args.query.toLowerCase());
+      });
     },
     me() {
       return {
