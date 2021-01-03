@@ -47,6 +47,24 @@ const posts = [
   },
 ];
 
+const comments = [
+  {
+    id: "1",
+    text: "a comment",
+    author: "1",
+  },
+  {
+    id: "2",
+    text: "another comment",
+    author: "2",
+  },
+  {
+    id: "3",
+    text: "another comment 3",
+    author: "1",
+  },
+];
+
 // Type Definitions schema
 
 const typeDefs = `
@@ -54,7 +72,9 @@ const typeDefs = `
     users(query: String): [User!]!
     me: User!
     post: Post!
+    comment: Comment!
     posts(query: String): [Post!]!
+    comments(query: String): [Comment!]!
   }
 
   type User {
@@ -73,6 +93,12 @@ const typeDefs = `
     type: String!
     author: User!
   }
+
+  type Comment {
+    id: ID!
+    text: String!
+    author: User!
+  }
 `;
 
 // Resolvers
@@ -84,6 +110,14 @@ const resolvers = {
       }
       return users.filter((user) => {
         return user.name.toLowerCase().includes(args.query.toLowerCase());
+      });
+    },
+    comments(parent, args, ctx, info) {
+      if (!args.query) {
+        return comments;
+      }
+      return comments.filter((comment) => {
+        return comment.text.toLowerCase().includes(args.query.toLowerCase());
       });
     },
     posts(parent, args, ctx, info) {
@@ -117,8 +151,21 @@ const resolvers = {
         type: "blog",
       };
     },
+    comment() {
+      return {
+        id: "1",
+        text: "some comment",
+      };
+    },
   },
   Post: {
+    author(parent, args, ctx, info) {
+      return users.find((user) => {
+        return user.id === parent.author;
+      });
+    },
+  },
+  Comment: {
     author(parent, args, ctx, info) {
       return users.find((user) => {
         return user.id === parent.author;
