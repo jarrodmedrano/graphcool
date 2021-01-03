@@ -1,4 +1,5 @@
 import { GraphQLServer } from "graphql-yoga";
+import { uuid } from "uuid";
 
 // String, Boolean, Int, Float
 
@@ -78,6 +79,10 @@ const typeDefs = `
     comment: Comment!
     posts(query: String): [Post!]!
     comments(query: String): [Comment!]!
+  }
+
+  type Mutation {
+    createUser(name: String!, email: String! age: Int): User!
   }
 
   type User {
@@ -162,6 +167,29 @@ const resolvers = {
         id: "1",
         text: "some comment",
       };
+    },
+  },
+  Mutation: {
+    createUser(parent, args, ctx, info) {
+      console.log(args);
+      const emailTaken = users.some((user) => {
+        return user.email === args.email;
+      });
+
+      if (emailTaken) {
+        throw new Error("Email Taken Liam Neeson");
+      }
+
+      const user = {
+        id: Math.random(),
+        name: args.name,
+        email: args.email,
+        age: args.age,
+      };
+
+      users.push(user);
+
+      return user;
     },
   },
   Post: {
