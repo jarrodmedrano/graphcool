@@ -181,11 +181,19 @@ const resolvers = {
         throw new Error("Email Taken Liam Neeson");
       }
 
+      const one = {
+        name: "Philadelphia",
+        country: "USA",
+      };
+
+      const two = {
+        population: 150000,
+        ...one,
+      };
+
       const user = {
         id: uuidv4(),
-        name: args.name,
-        email: args.email,
-        age: args.age,
+        ...args,
       };
 
       users.push(user);
@@ -207,10 +215,7 @@ const resolvers = {
 
       const comment = {
         id: uuidv4(),
-        text: args.text,
-        published: args.published,
-        author: args.author,
-        post: args.post,
+        ...args,
       };
 
       comments.push(comment);
@@ -228,10 +233,7 @@ const resolvers = {
 
       const post = {
         id: uuidv4(),
-        title: args.title,
-        body: args.body,
-        published: args.published,
-        author: args.author,
+        ...args,
       };
 
       posts.push(post);
