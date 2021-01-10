@@ -82,9 +82,22 @@ const typeDefs = `
   }
 
   type Mutation {
-    createUser(name: String!, email: String! age: Int): User!
-    createPost(title: String!, body: String!, published: Boolean!, author: ID!): Post!
+    createUser(data: CreateUserInput): User!
+    createPost(data: CreatePost): Post!
     createComment(text: String!, published: Boolean!, author: ID!, post: ID!): Comment!
+  }
+
+  input CreatePost {
+    title: String!
+    body: String!
+    type: String!
+    author: String!
+  }
+
+  input CreateUserInput {
+    name: String!
+    email: String!
+    age: Int
   }
 
   type User {
@@ -172,9 +185,27 @@ const resolvers = {
     },
   },
   Mutation: {
+    createPost(parent, args, ctx, info) {
+      const userExists = users.some((user) => {
+        return user.id === args.data.author;
+      });
+
+      if (!userExists) {
+        throw new Error("User not found");
+      }
+
+      const post = {
+        id: uuidv4(),
+        ...args.data,
+      };
+
+      posts.push(post);
+
+      return post;
+    },
     createUser(parent, args, ctx, info) {
       const emailTaken = users.some((user) => {
-        return user.email === args.email;
+        return user.email === args.data.email;
       });
 
       if (emailTaken) {
@@ -193,7 +224,7 @@ const resolvers = {
 
       const user = {
         id: uuidv4(),
-        ...args,
+        ...args.data,
       };
 
       users.push(user);
@@ -221,24 +252,6 @@ const resolvers = {
       comments.push(comment);
 
       return comment;
-    },
-    createPost(parent, args, ctx, info) {
-      const userExists = users.some((user) => {
-        return user.id === args.author;
-      });
-
-      if (!userExists) {
-        throw new Error("User not found");
-      }
-
-      const post = {
-        id: uuidv4(),
-        ...args,
-      };
-
-      posts.push(post);
-
-      return post;
     },
   },
   Post: {
