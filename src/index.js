@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 
 // Demo user data
 
-const users = [
+let users = [
   {
     id: "1",
     name: "Andrew",
@@ -24,7 +24,7 @@ const users = [
   },
 ];
 
-const posts = [
+let posts = [
   {
     id: "1",
     title: "Post1",
@@ -48,7 +48,7 @@ const posts = [
   },
 ];
 
-const comments = [
+let comments = [
   {
     id: "1",
     text: "a comment",
@@ -83,15 +83,18 @@ const typeDefs = `
 
   type Mutation {
     createUser(data: CreateUserInput): User!
+    deleteUser(id: ID!): User!
     createPost(data: CreatePost): Post!
-    createComment(text: String!, published: Boolean!, author: ID!, post: ID!): Comment!
+    createComment(data: CreateCommentInput): Comment!
+    deletePost(id: ID!): Post!
   }
 
   input CreatePost {
     title: String!
     body: String!
     type: String!
-    author: String!
+    author: ID!
+    published: Boolean!
   }
 
   input CreateUserInput {
@@ -124,6 +127,12 @@ const typeDefs = `
     text: String!
     author: User!
     post: Post!
+  }
+
+  input CreateCommentInput {
+    text: String!
+    author: ID!
+    post: ID!
   }
 `;
 
@@ -231,13 +240,55 @@ const resolvers = {
 
       return user;
     },
+    deletePost(parent, args, ctx, info) {
+      const postIdx = posts.findIndex((post) => post.id === args.id);
+
+      if (postIdx === -1) {
+        throw new Error("Post not found");
+      }
+
+      const deletedPosts = posts.splice(postIdx, 1);
+
+      comments = comments.filter((comment) => {
+        const match = comment.post === args.id;
+
+        if (match) {
+          comments = comments.filter((comment) => comment.post === args.id);
+        }
+      });
+
+      return deletedPosts[0];
+    },
+    deleteUser(parent, args, ctx, info) {
+      const userIndex = users.findIndex((user) => user.id === args.id);
+
+      if (userIndex === -1) {
+        throw new Error("User not found");
+      }
+
+      const deletedUsers = users.splice(userIndex, 1);
+
+      posts = posts.filter((post) => {
+        const match = post.author === args.id;
+
+        if (match) {
+          comments = comments.filter((comment) => comment.post === comment.id);
+        }
+
+        return !match;
+      });
+
+      comments = comments.filter((comment) => comment.author !== args.id);
+
+      return deletedUsers[0];
+    },
     createComment(parent, args, ctx, info) {
       const userExists = users.some((user) => {
-        return user.id === args.author;
+        return user.id === args.data.author;
       });
 
       const postExists = posts.some(
-        (post) => post.id === args.post && post.published
+        (post) => post.id === args.data.post && post.published
       );
 
       if (!postExists || !userExists) {
@@ -246,7 +297,7 @@ const resolvers = {
 
       const comment = {
         id: uuidv4(),
-        ...args,
+        ...args.data,
       };
 
       comments.push(comment);
