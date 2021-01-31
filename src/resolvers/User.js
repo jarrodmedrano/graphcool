@@ -1,5 +1,4 @@
-
-const User =  {
+const User = {
   posts(parent, args, { db }, info) {
     return db.posts.filter((post) => {
       return post.author === parent.id;
@@ -10,6 +9,6 @@ const User =  {
       return comment.author === parent.id;
     });
   },
-},
+};
 
-export { User as default }
+export { User as default };
