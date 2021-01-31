@@ -80,3 +80,7 @@ input CreateCommentInput {
   author: ID!
   post: ID!
 }
+
+type Subscription {
+  count: Int!
+}
