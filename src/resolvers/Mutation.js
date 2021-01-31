@@ -17,7 +17,13 @@ const Mutation = {
 
     db.posts.push(post);
 
-    post.published && pubsub.publish(`post`, { post });
+    post.published &&
+      pubsub.publish(`post`, {
+        post: {
+          mutation: "CREATED",
+          data: post,
+        },
+      });
 
     return post;
   },
